@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vansh Kumar | Frontend Developer & UI/UX Designer</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #030712;
+      --card-bg: rgba(17, 24, 39, 0.45);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.3);
+      --accent-secondary: #38bdf8;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* 3D Canvas Background */
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* App Container */
+    .app-container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Navigation */
+    aside {
+      width: 320px;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background: rgba(3, 7, 18, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-right: 1px solid var(--card-border);
+      padding: 2.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      z-index: 10;
+    }
+
+    .profile-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 115px;
+      height: 115px;
+      border-radius: 50%;
+      padding: 3px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+      box-shadow: 0 0 25px var(--accent-glow);
+      margin-bottom: 1.2rem;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .avatar-wrapper:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 35px rgba(56, 189, 248, 0.4);
+    }
+
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: top;
+      background: #111;
+    }
+
+    .brand h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #fff 30%, var(--accent-secondary));
+    -webkit-background-clip: text;
+    background-clip: text; /* <-- Add this line */
+    -webkit-text-fill-color: transparent;
+}
+
+    .brand p {
+      color: var(--accent-secondary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-main);
+      transform: translateX(6px);
+    }
+
+    .sidebar-footer {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .sidebar-footer a {
+      color: var(--accent-secondary);
+      text-decoration: none;
+      display: block;
+      margin-top: 4px;
+      word-break: break-all;
+    }
+
+    /* Main Content */
+    main {
+      margin-left: 320px;
+      flex: 1;
+      padding: 4rem 5rem;
+      max-width: 1200px;
+    }
+
+    section {
+      margin-bottom: 6rem;
+      scroll-margin-top: 4rem;
+    }
+
+    .section-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 2.5rem;
+      position: relative;
+      display: inline-block;
+      letter-spacing: -0.5px;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 45px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+      border-radius: 2px;
+    }
+
+    /* Glassmorphism Cards */
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 2rem;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: 0 16px 35px var(--accent-glow);
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 80vh;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      align-items: center;
+      gap: 3rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      letter-spacing: -1.5px;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      line-height: 1.8;
+    }
+
+    /* Interactive 3D Card Showcase */
+    .hero-image-card {
+      position: relative;
+      width: 100%;
+      max-width: 330px;
+      height: 450px;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), 0 0 30px var(--accent-glow);
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      margin: 0 auto;
+    }
+
+    .hero-image-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 32px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #4f46e5);
+      color: #fff;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 8px 24px var(--accent-glow);
+      transition: all 0.3s ease;
+    }
+
+    .cta-btn:hover {
+      transform: scale(1.03);
+      box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4);
+    }
+
+    /* Skills Grid */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .skill-category h3 {
+      font-size: 1.1rem;
+      color: var(--accent-secondary);
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+    }
+
+    /* Projects Section */
+    .projects-container {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .project-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .project-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .project-type {
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      color: var(--text-muted);
+    }
+
+    .project-list {
+      list-style-position: inside;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Education Section */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .timeline-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .institution {
+      font-size: 0.9rem;
+      color: var(--accent-secondary);
+    }
+
+    .grade {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #a5b4fc;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 992px) {
+      aside {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 2rem;
+        border-right: none;
+        border-bottom: 1px solid var(--card-border);
+      }
+      .app-container {
+        flex-direction: column;
+      }
+      main {
+        margin-left: 0;
+        padding: 3rem 1.5rem;
+      }
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+      .hero h1 {
+        font-size: 2.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Three.js Interactive 3D Background Canvas -->
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside>
+      <div>
+        <div class="profile-box">
+          <div class="avatar-wrapper">
+            <img src="profile.jpg" alt="Vansh Kumar" class="avatar-img" />
+          </div>
+          <div class="brand">
+            <h1>Vansh Kumar</h1>
+            <p>Frontend & UI/UX</p>
+          </div>
+        </div>
+
+        <ul class="nav-links">
+          <li><a href="#about">About</a></li>
+          <li><a href="#skills">Skills</a></li>
+          <li><a href="#projects">Projects</a></li>
+          <li><a href="#education">Education</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <span>Get in touch:</span>
+        <a href="mailto:boyshell270@gmail.com">boyshell270@gmail.com</a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main>
+      <!-- Hero / About Section -->
+      <section id="about" class="hero">
+        <div class="hero-content">
+          <div class="badge">Available for Opportunities</div>
+          <h1>Crafting <span>Intuitive</span> Digital Solutions</h1>
+          <p>
+            Hi, I’m <strong>Vansh Kumar</strong>, a passionate <strong>Frontend Developer and UI/UX Designer</strong> with a strong focus on <strong>problem-solving and creating user-friendly digital experiences</strong>. I enjoy understanding user needs, identifying design and development challenges, and finding simple, effective solutions. With skills in <strong>HTML, CSS, JavaScript, Figma, and Photoshop</strong>, I combine creativity with technical knowledge to build responsive websites and intuitive interfaces. I’m always focused on improving usability, solving real-world problems, and creating digital products that deliver a smooth and engaging user experience.
+          </p>
+          <a href="mailto:boyshell270@gmail.com" class="cta-btn">Connect With Me &rarr;</a>
+        </div>
+
+        <!-- 3D Photo Card -->
+        <div class="hero-image-card" id="interactive-card">
+          <img src="profile.jpg" alt="Vansh Kumar Portrait" />
+        </div>
+      </section>
+
+      <!-- Technical Skills -->
+      <section id="skills">
+        <h2 class="section-title">Technical Expertise</h2>
+        <div class="skills-grid">
+          <div class="glass-card skill-category">
+            <h3>Languages</h3>
+            <div class="tag-container">
+              <span class="tag">HTML5</span>
+              <span class="tag">CSS3</span>
+              <span class="tag">JavaScript (ES6+)</span>
+              <span class="tag">TypeScript</span>
+            </div>
+          </div>
+
+          <div class="glass-card skill-category">
+            <h3>Frameworks / Libraries</h3>
+            <div class="tag-container">
+              <span class="tag">React.js</span>
+              <span class="tag">React Hooks</span>
+              <span class="tag">React Router</span>
+            </div>
+          </div>
+
+          <div class="glass-card skill-category">
+            <h3>Design Tools</h3>
+            <div class="tag-container">
+              <span class="tag">Figma</span>
+              <span class="tag">Adobe XD</span>
+              <span class="tag">Adobe Illustrator</span>
+              <span class="tag">Photoshop</span>
+              <span class="tag">Penpot</span>
+            </div>
+          </div>
+
+          <div class="glass-card skill-category">
+            <h3>Tools & Platforms</h3>
+            <div class="tag-container">
+              <span class="tag">Git</span>
+              <span class="tag">GitHub</span>
+              <span class="tag">npm</span>
+              <span class="tag">VS Code</span>
+              <span class="tag">Vercel / Netlify</span>
+            </div>
+          </div>
+
+          <div class="glass-card skill-category" style="grid-column: 1 / -1;">
+            <h3>Core Concepts</h3>
+            <div class="tag-container">
+              <span class="tag">Responsive Design</span>
+              <span class="tag">REST APIs</span>
+              <span class="tag">Component Architecture</span>
+              <span class="tag">Version Control</span>
+              <span class="tag">Accessibility (WCAG basics)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Projects Section -->
+      <section id="projects">
+        <h2 class="section-title">Featured Projects</h2>
+        <div class="projects-container">
+          
+          <div class="glass-card project-card">
+            <div class="project-header">
+              <span class="project-title">Real-Time Collaborative Design-to-Code Tool</span>
+              <span class="project-type">Personal Project</span>
+            </div>
+            <div class="tag-container">
+              <span class="tag">React</span>
+              <span class="tag">TypeScript</span>
+              <span class="tag">WebSockets (Socket.io)</span>
+              <span class="tag">Figma API</span>
+            </div>
+            <ul class="project-list">
+              <li>Built a browser-based tool that imports Figma frames via the Figma API and converts layers into editable React + TypeScript components in real time.</li>
+              <li>Implemented live multi-user collaboration using WebSockets, allowing multiple designers/developers to comment and edit component props simultaneously.</li>
+              <li>Architected a reusable component library with a typed props system, reducing duplicate UI code across sample projects by an estimated 40%.</li>
+              <li>Deployed with CI-friendly build scripts and Git-based version control for iterative feature releases.</li>
+            </ul>
+          </div>
+
+          <div class="glass-card project-card">
+            <div class="project-header">
+              <span class="project-title">Food Delivery App UI</span>
+              <span class="project-type">Personal Project</span>
+            </div>
+            <div class="tag-container">
+              <span class="tag">Figma</span>
+              <span class="tag">React.js</span>
+            </div>
+            <ul class="project-list">
+              <li>Designed a complete food delivery app UI in Figma, including onboarding, menu browsing, cart, and checkout screens.</li>
+              <li>Converted the design into a fully responsive React.js front end with reusable components for menu cards, cart items, and order summaries.</li>
+              <li>Implemented client-side state management to handle cart updates, quantity changes, and order totals without page reloads.</li>
+            </ul>
+          </div>
+
+          <div class="glass-card project-card">
+            <div class="project-header">
+              <span class="project-title">E-Commerce Website</span>
+              <span class="project-type">Personal Project</span>
+            </div>
+            <div class="tag-container">
+              <span class="tag">React.js</span>
+              <span class="tag">JavaScript</span>
+            </div>
+            <ul class="project-list">
+              <li>Built a multi-page e-commerce storefront with product listings, category filters, a shopping cart, and a checkout flow.</li>
+              <li>Used React Router for client-side navigation and component-based architecture to keep the UI modular and maintainable.</li>
+              <li>Focused on responsive layouts and cross-browser consistency using CSS3 flexbox/grid.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Education Section -->
+      <section id="education">
+        <h2 class="section-title">Education</h2>
+        <div class="timeline">
+          
+          <div class="glass-card timeline-item">
+            <div class="timeline-header">
+              <h3>B.Tech in Computer Science</h3>
+              <span class="project-type">Expected Aug 2027</span>
+            </div>
+            <span class="institution">Future Institute of Engineering and Technology</span>
+            <span class="grade">CGPA: 7.0 / 10.0</span>
+          </div>
+
+          <div class="glass-card timeline-item">
+            <div class="timeline-header">
+              <h3>Class XII (UP Board)</h3>
+              <span class="project-type">2023</span>
+            </div>
+            <span class="institution">Chironji Lal College</span>
+            <span class="grade">Percentage: 80%</span>
+          </div>
+
+          <div class="glass-card timeline-item">
+            <div class="timeline-header">
+              <h3>Class X (UP Board)</h3>
+              <span class="project-type">2021</span>
+            </div>
+            <span class="institution">Chironji Lal College</span>
+            <span class="grade">Percentage: 70%</span>
+          </div>
+
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- JavaScript for 3D Animations & Interactions -->
+  <script>
+    // 1. Three.js Background Canvas Setup
+    const canvas = document.getElementById('bg-canvas');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // Particle Stars
+    const particlesCount = 800;
+    const posArray = new Float32Array(particlesCount * 3);
+
+    for(let i = 0; i < particlesCount * 3; i++) {
+      posArray[i] = (Math.random() - 0.5) * 14;
+    }
+
+    const particlesGeometry = new THREE.BufferGeometry();
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+    const particlesMaterial = new THREE.PointsMaterial({
+      size: 0.02,
+      color: 0x6366f1,
+      transparent: true,
+      opacity: 0.6,
+      blending: THREE.AdditiveBlending
+    });
+
+    const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+    scene.add(particlesMesh);
+    camera.position.z = 3;
+
+    // Interactive Mouse Motion
+    let mouseX = 0;
+    let mouseY = 0;
+
+    window.addEventListener('mousemove', (event) => {
+      mouseX = (event.clientX / window.innerWidth) - 0.5;
+      mouseY = -(event.clientY / window.innerHeight) + 0.5;
+    });
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsedTime = clock.getElapsedTime();
+
+      particlesMesh.rotation.y = elapsedTime * 0.03;
+      particlesMesh.rotation.x = elapsedTime * 0.015;
+
+      particlesMesh.position.x += (mouseX * 0.4 - particlesMesh.position.x) * 0.05;
+      particlesMesh.position.y += (mouseY * 0.4 - particlesMesh.position.y) * 0.05;
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // 2. Interactive 3D Card Tilt Effect
+    const card = document.getElementById('interactive-card');
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      
+      card.style.transform = `perspective(1000px) rotateY(${x / 10}deg) rotateX(${-y / 10}deg) scale(1.02)`;
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = `perspective(1000px) rotateY(0deg) rotateX(0deg) scale(1)`;
+    });
+  </script>
+</body>
+</html>
